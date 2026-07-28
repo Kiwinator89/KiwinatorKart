@@ -46,7 +46,7 @@ let kartLoaded = false;
 
 let kartBody = {
 
-  pos: new THREE.Vector3(0,0.6,1800),
+  pos: new THREE.Vector3(0,0.6,80),
 
   speed:0,
 
@@ -162,7 +162,7 @@ camPos.copy(
  new THREE.Vector3(
   0,
   8,
-  1814
+  94
  )
 );
 
