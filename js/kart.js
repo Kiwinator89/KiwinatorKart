@@ -82,12 +82,21 @@ function initKart(scene, character, camera) {
     'Models/Kart.glb',
     (gltf) => {
       kartMesh = gltf.scene;
-      kartMesh.scale.setScalar(1.2);
+      kartMesh.scale.setScalar(0.12);
+      kartMesh.rotation.y = Math.PI / 2; // 90 graden draaien zodat model voorwaarts wijst
       kartMesh.position.copy(kartBody.pos);
       scene.add(kartMesh);
 
       // Karakter sprite bovenop kart
       buildCharSprite(scene, character);
+      // Camera direct op juiste positie zetten zodat hij niet van ver hoeft te lerpen
+      const b = kartBody;
+      camPos.set(
+        b.pos.x - Math.sin(b.heading) * CAM_CONFIG.distance,
+        b.pos.y + CAM_CONFIG.height,
+        b.pos.z - Math.cos(b.heading) * CAM_CONFIG.distance
+      );
+      camTarget.copy(b.pos);
       kartLoaded = true;
     },
     undefined,
@@ -112,6 +121,13 @@ function initKart(scene, character, camera) {
       kartMesh.position.copy(kartBody.pos);
       scene.add(kartMesh);
       buildCharSprite(scene, character);
+      const b = kartBody;
+      camPos.set(
+        b.pos.x - Math.sin(b.heading) * CAM_CONFIG.distance,
+        b.pos.y + CAM_CONFIG.height,
+        b.pos.z - Math.cos(b.heading) * CAM_CONFIG.distance
+      );
+      camTarget.copy(b.pos);
       kartLoaded = true;
     }
   );
@@ -231,7 +247,7 @@ function updateKart(delta) {
   // ── Kart mesh updaten ──
   if (kartMesh) {
     kartMesh.position.copy(b.pos);
-    kartMesh.rotation.y = b.heading;
+    kartMesh.rotation.y = b.heading + Math.PI / 2; // +90° offset om model voorwaarts te houden
 
     // Visuele kanteling in bochten
     kartMesh.rotation.z = THREE.MathUtils.lerp(
