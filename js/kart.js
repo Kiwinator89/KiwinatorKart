@@ -2,14 +2,14 @@
 
 // ── Constanten ──
 const KART_CONFIG = {
-  maxSpeed:        18,
-  reverseSpeed:    5,
+  maxSpeed:        4,
+  reverseSpeed:    2,
   acceleration:    0.18,
   brakeForce:      0.35,
   friction:        0.96,      // snelheid verlies per frame zonder gas
   driftFriction:   0.88,      // extra verlies bij driften
   steerMax:        0.045,     // maximale stuurhoek per frame
-  steerSpeed:      0.004,     // hoe snel stuur opbouwt
+  steerSpeed:      0.3,     // hoe snel stuur opbouwt
   steerReturn:     0.007,     // hoe snel stuur terug naar neutraal
   gripBase:        1.0,       // laterale grip (1 = volledig)
   gripMin:         0.55,      // minimale grip bij hoge snelheid
