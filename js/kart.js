@@ -1,17 +1,17 @@
 // kart.js — Arcade Kart Physics (nieuwe versie)
 
 const KART_CONFIG = {
-  maxSpeed: 0.4,
+  maxSpeed: 0.8,
   reverseSpeed: 0.18,
 
-  acceleration: 0.022,
+  acceleration: 0.01,
   brakeForce: 0.045,
 
   friction: 0.94,
 
   // makkelijk sturen
-  steerMax: 0.14,
-  steerSpeed: 0.035,
+  steerMax: 0.4,
+  steerSpeed: 0.015,
   steerReturn: 0.02,
 
   // grip
@@ -19,9 +19,9 @@ const KART_CONFIG = {
   gripMin: 0.65,
 
   // bochten
-  turnStrength: 0.45,
+  turnStrength: 0.25,
 
-  driftThreshold: 0.75,
+  driftThreshold: 0.40,
 };
 
 
