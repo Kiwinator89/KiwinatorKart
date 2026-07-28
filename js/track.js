@@ -4,7 +4,7 @@ const TRACK = {
   name: 'Schimmel Paniek Baan',
   music: 'Audio/SchimmelPaniekBaan.mp3',
   laps: 3,
-  trackWidth: 12,
+  trackWidth: 360,
   decorModels: {
     tree: 'Models/Tree.glb',
     rock: 'Models/Rock.glb',
@@ -21,37 +21,37 @@ let decorObjects = [];
 function buildTrackPoints() {
   return [
     // Start/finish onderaan midden
-    new THREE.Vector3(  0,   0,  60),
+    new THREE.Vector3(    0,   0,  1800),
     // Rechts naar beneden, S-bocht onderkant
-    new THREE.Vector3( 30,   0,  55),
-    new THREE.Vector3( 55,   0,  40),
-    new THREE.Vector3( 60,   0,  15),
+    new THREE.Vector3(  900,   0,  1650),
+    new THREE.Vector3( 1650,   0,  1200),
+    new THREE.Vector3( 1800,   0,   450),
     // Rechterbocht groot (rechtsonder)
-    new THREE.Vector3( 55,   0, -10),
-    new THREE.Vector3( 40,   0, -30),
+    new THREE.Vector3( 1650,   0,  -300),
+    new THREE.Vector3( 1200,   0,  -900),
     // S-bocht midden rechts omhoog
-    new THREE.Vector3( 20,   0, -20),
-    new THREE.Vector3(  0,   0, -30),
-    new THREE.Vector3(-15,   0, -20),
+    new THREE.Vector3(  600,   0,  -600),
+    new THREE.Vector3(    0,   0,  -900),
+    new THREE.Vector3( -450,   0,  -600),
     // Rechtsboven knob
-    new THREE.Vector3(-10,   0,  10),
-    new THREE.Vector3(  5,   0,  20),
-    new THREE.Vector3( 10,   0,  35),
+    new THREE.Vector3( -300,   0,   300),
+    new THREE.Vector3(  150,   0,   600),
+    new THREE.Vector3(  300,   0,  1050),
     // Linker bobbel bovenaan
-    new THREE.Vector3(  0,   0,  45),
-    new THREE.Vector3(-15,   0,  50),
-    new THREE.Vector3(-30,   0,  45),
-    new THREE.Vector3(-35,   0,  30),
+    new THREE.Vector3(    0,   0,  1350),
+    new THREE.Vector3( -450,   0,  1500),
+    new THREE.Vector3( -900,   0,  1350),
+    new THREE.Vector3(-1050,   0,   900),
     // Linkerbocht groot
-    new THREE.Vector3(-55,   0,  20),
-    new THREE.Vector3(-65,   0,   0),
-    new THREE.Vector3(-55,   0, -20),
+    new THREE.Vector3(-1650,   0,   600),
+    new THREE.Vector3(-1950,   0,     0),
+    new THREE.Vector3(-1650,   0,  -600),
     // Linksonder terugkeer
-    new THREE.Vector3(-30,   0, -30),
-    new THREE.Vector3(-10,   0, -15),
+    new THREE.Vector3( -900,   0,  -900),
+    new THREE.Vector3( -300,   0,  -450),
     // Terug naar start
-    new THREE.Vector3( -5,   0,  30),
-    new THREE.Vector3(  0,   0,  60), // sluit de lus
+    new THREE.Vector3( -150,   0,   900),
+    new THREE.Vector3(    0,   0,  1800), // sluit de lus
   ];
 }
 
@@ -112,7 +112,7 @@ function buildTrack(scene) {
 
   // ── Gras ondergrond ──
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(300, 300),
+    new THREE.PlaneGeometry(9000, 9000),
     new THREE.MeshLambertMaterial({ color: 0x3a7d2c })
   );
   ground.rotation.x = -Math.PI / 2;
@@ -121,6 +121,9 @@ function buildTrack(scene) {
 
   // ── Start/finish lijn ──
   buildStartLine(scene);
+
+  // ── Checkpoints ──
+  buildCheckpoints(scene);
 
   // ── Decor ──
   loadDecor(scene);
@@ -144,12 +147,87 @@ function buildStartLine(scene) {
   }
   const tex = new THREE.CanvasTexture(canvas);
   const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(TRACK.trackWidth, 4),
+    new THREE.PlaneGeometry(TRACK.trackWidth, 120),
     new THREE.MeshLambertMaterial({ map: tex })
   );
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(0, 0.01, 60);
+  mesh.position.set(0, 0.01, 1800);
   scene.add(mesh);
+}
+
+// ── Checkpoints ──
+// t-waarden langs de curve (0.0 = start/finish, daarna op ~25% intervallen)
+const CHECKPOINT_T = [0.25, 0.50, 0.75];
+const checkpointMeshes = [];
+let checkpointState = { reached: [false, false, false], lap: 0 };
+
+function buildCheckpoints(scene) {
+  checkpointMeshes.length = 0;
+
+  CHECKPOINT_T.forEach((t, i) => {
+    const pt  = trackCurve.getPointAt(t);
+    const tan = trackCurve.getTangentAt(t).normalize();
+    const right = new THREE.Vector3().crossVectors(tan, new THREE.Vector3(0, 1, 0)).normalize();
+
+    // Visuele poort: twee pilaren links en rechts van de baan
+    const pillarGeo = new THREE.BoxGeometry(8, 60, 8);
+    const pillarMat = new THREE.MeshLambertMaterial({
+      color: [0xff4444, 0xffaa00, 0x44aaff][i],
+    });
+
+    [-1, 1].forEach(side => {
+      const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+      const edge = pt.clone().addScaledVector(right, side * (TRACK.trackWidth / 2 + 10));
+      pillar.position.set(edge.x, 30, edge.z);
+      scene.add(pillar);
+    });
+
+    // Onzichtbaar triggervolume (als object voor positiecheck)
+    checkpointMeshes.push({ pos: pt.clone(), tan: tan.clone(), index: i });
+  });
+}
+
+// Roep dit aan vanuit main.js elke frame met de kartpositie.
+// Geeft { lapComplete: bool, lap: number, checkpoints: [bool,bool,bool] } terug.
+function updateCheckpoints(kartPos, kartHeading) {
+  const state = checkpointState;
+  const result = { lapComplete: false, lap: state.lap, checkpoints: [...state.reached] };
+
+  // Check actieve checkpoint (volgende die nog niet bereikt is)
+  const nextIndex = state.reached.indexOf(false);
+
+  if (nextIndex !== -1) {
+    const cp = checkpointMeshes[nextIndex];
+    const dist = new THREE.Vector2(kartPos.x - cp.pos.x, kartPos.z - cp.pos.z).length();
+    if (dist < TRACK.trackWidth * 0.8) {
+      state.reached[nextIndex] = true;
+      result.checkpoints = [...state.reached];
+    }
+  } else {
+    // Alle checkpoints gehaald — check finish (start/finish lijn bij t≈0, positie 0,0,1800)
+    const finishPos = trackCurve.getPointAt(0);
+    const distFinish = new THREE.Vector2(kartPos.x - finishPos.x, kartPos.z - finishPos.z).length();
+
+    // Eenrichtingscheck: speler moet in rij-richting de lijn passeren
+    const finishTan = trackCurve.getTangentAt(0);
+    const heading2D = new THREE.Vector2(Math.sin(kartHeading), Math.cos(kartHeading));
+    const finishDir = new THREE.Vector2(finishTan.x, finishTan.z);
+    const movingCorrectWay = heading2D.dot(finishDir) > 0;
+
+    if (distFinish < TRACK.trackWidth * 0.8 && movingCorrectWay) {
+      state.lap++;
+      state.reached = [false, false, false];
+      result.lap = state.lap;
+      result.lapComplete = true;
+      result.checkpoints = [false, false, false];
+    }
+  }
+
+  return result;
+}
+
+function resetCheckpoints() {
+  checkpointState = { reached: [false, false, false], lap: 0 };
 }
 
 // ── Decor: bomen en stenen langs baan ──
@@ -201,7 +279,7 @@ function generateDecorPositions() {
 
     // Wissel boom/steen
     const model = i % 3 === 0 ? 'rock' : 'tree';
-    const offset = w / 2 + 3 + Math.random() * 4;
+    const offset = w / 2 + 90 + Math.random() * 120;
     const side = Math.random() > 0.5 ? 1 : -1;
 
     decor.push({
@@ -235,5 +313,8 @@ function stopTrackMusic() {
 }
 
 // ── Exporteer voor main.js ──
-function getTrackCurve() { return trackCurve; }
-function getTrackWidth() { return TRACK.trackWidth; }
+function getTrackCurve()       { return trackCurve; }
+function getTrackWidth()       { return TRACK.trackWidth; }
+// Checkpoint API (aanroepen vanuit main.js game loop):
+// updateCheckpoints(kartPos, kartHeading) → { lapComplete, lap, checkpoints }
+// resetCheckpoints() → reset bij nieuw spel
