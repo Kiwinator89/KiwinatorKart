@@ -66,6 +66,7 @@ function startRace() {
 
   gameRunning = true;
   lapCount = 0;
+  resetCheckpoints();
   updateHUDLap();
   gameLoop();
 }
@@ -90,6 +91,15 @@ function gameLoop(ts = 0) {
   if (kartState) {
     const pos = getKartPosition();
     const heading = getKartHeading();
+
+    // Checkpoint & rondeteller
+    const cpResult = updateCheckpoints(pos, heading);
+    if (cpResult.lapComplete) {
+      lapCount = cpResult.lap;
+      updateHUDLap();
+      if (lapCount >= TOTAL_LAPS) gameRunning = false;
+    }
+
     const finished = updateUI(kartState, pos, heading);
     if (finished) gameRunning = false;
   }
