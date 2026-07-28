@@ -4,7 +4,7 @@ const KART_CONFIG = {
   maxSpeed: 0.8,
   reverseSpeed: 0.18,
 
-  acceleration: 0.01,
+  acceleration: 0.003,
   brakeForce: 0.045,
 
   friction: 0.94,
