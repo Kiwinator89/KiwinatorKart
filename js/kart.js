@@ -2,20 +2,20 @@
 
 // ── Constanten ──
 const KART_CONFIG = {
-  maxSpeed:        4,
-  reverseSpeed:    2,
-  acceleration:    0.18,
-  brakeForce:      0.35,
-  friction:        0.96,      // snelheid verlies per frame zonder gas
-  driftFriction:   0.88,      // extra verlies bij driften
-  steerMax:        0.045,     // maximale stuurhoek per frame
-  steerSpeed:      0.3,     // hoe snel stuur opbouwt
-  steerReturn:     0.007,     // hoe snel stuur terug naar neutraal
-  gripBase:        1.0,       // laterale grip (1 = volledig)
-  gripMin:         0.55,      // minimale grip bij hoge snelheid
-  downforce:       0.012,     // grip toename op hoge snelheid
-  cornerBrake:     0.82,      // snelheid penalty in scherpe bocht
-  diagonalBoost:   1.20,      // DartMonkey 20% bonus
+  maxSpeed:        0.4,        // 10x langzamer (HUD schaalt nog naar 180 km/h)
+  reverseSpeed:    0.2,
+  acceleration:    0.018,      // proportioneel mee omlaag
+  brakeForce:      0.035,
+  friction:        0.96,
+  driftFriction:   0.88,
+  steerMax:        0.045,
+  steerSpeed:      0.004,      // was 0.3 → stuurbug fix
+  steerReturn:     0.007,
+  gripBase:        1.0,
+  gripMin:         0.55,
+  downforce:       0.012,
+  cornerBrake:     0.82,
+  diagonalBoost:   1.20,
 };
 
 const CAM_CONFIG = {
@@ -30,7 +30,7 @@ const CAM_CONFIG = {
 let kartMesh       = null;
 let kartSprite     = null;
 let kartBody       = {
-  pos:        new THREE.Vector3(0, 0.6, 60),
+  pos:        new THREE.Vector3(0, 0.6, 1800),
   vel:        new THREE.Vector3(),
   speed:      0,
   heading:    0,       // richting in radialen (Y-as)
@@ -47,8 +47,8 @@ let kartLoaded     = false;
 const keys = { w: false, a: false, s: false, d: false, space: false };
 
 // ── Camera state ──
-const camPos      = new THREE.Vector3(0, 8, 74);
-const camTarget   = new THREE.Vector3(0, 0, 60);
+const camPos      = new THREE.Vector3(0, 8, 1814);
+const camTarget   = new THREE.Vector3(0, 0, 1800);
 
 // ── Input ──
 function initInput() {
