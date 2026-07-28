@@ -210,7 +210,7 @@ function generateDecorPositions() {
         x: pt.x + right.x * offset * side,
         z: pt.z + right.z * offset * side
       },
-      scale: 0.8 + Math.random() * 0.8,
+      scale: (0.8 + Math.random() * 0.8) / 10,
       rot: Math.random() * Math.PI * 2
     });
   }
